@@ -27,6 +27,9 @@
 *.i*86
 *.x86_64
 *.hex
+.tundra2*
+t2-output
+tags
 
 # Debug files
 *.dSYM/
