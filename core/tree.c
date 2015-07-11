@@ -9,7 +9,18 @@
  * tree.c: Everything that primarily modifies the layout tree data structure.
  *
  */
-#include "all.h"
+#include <stddef.h>
+#include "data.h"
+#include "con.h"
+#include "tree.h"
+#include "log.h"
+#include "output.h"
+#include "util.h"
+#include "workspace.h"
+#include "render.h"
+#include <stdlib.h>
+#include <string.h>
+#include <assert.h>
 
 struct Con *croot;
 struct Con *focused;
@@ -24,11 +35,11 @@ struct all_cons_head all_cons = TAILQ_HEAD_INITIALIZER(all_cons);
 static Con *_create___i3(void) {
     Con *__i3 = con_new(croot, NULL);
     FREE(__i3->name);
-    __i3->name = sstrdup("__i3");
+    __i3->name = strdup("__i3");
     __i3->type = CT_OUTPUT;
     __i3->layout = L_OUTPUT;
     con_fix_percent(croot);
-    x_set_name(__i3, "[i3 con] pseudo-output __i3");
+    //x_set_name(__i3, "[i3 con] pseudo-output __i3");
     /* For retaining the correct position/size of a scratchpad window, the
      * dimensions of the real outputs should be multiples of the __i3
      * pseudo-output. Ensuring that is the job of scratchpad_fix_resolution()
@@ -42,20 +53,20 @@ static Con *_create___i3(void) {
     Con *content = con_new(NULL, NULL);
     content->type = CT_CON;
     FREE(content->name);
-    content->name = sstrdup("content");
+    content->name = strdup("content");
     content->layout = L_SPLITH;
 
-    x_set_name(content, "[i3 con] content __i3");
+    //x_set_name(content, "[i3 con] content __i3");
     con_attach(content, __i3, false);
 
     /* Attach the __i3_scratch workspace. */
     Con *ws = con_new(NULL, NULL);
     ws->type = CT_WORKSPACE;
     ws->num = -1;
-    ws->name = sstrdup("__i3_scratch");
+    ws->name = strdup("__i3_scratch");
     ws->layout = L_SPLITH;
     con_attach(ws, content, false);
-    x_set_name(ws, "[i3 con] workspace __i3_scratch");
+    //x_set_name(ws, "[i3 con] workspace __i3_scratch");
     ws->fullscreen_mode = CF_OUTPUT;
 
     return __i3;
@@ -65,6 +76,7 @@ static Con *_create___i3(void) {
  * Loads tree from 'path' (used for in-place restarts).
  *
  */
+#if 0
 bool tree_restore(const char *path, xcb_get_geometry_reply_t *geometry) {
     char *globbed = resolve_tilde(path);
 
@@ -108,23 +120,29 @@ bool tree_restore(const char *path, xcb_get_geometry_reply_t *geometry) {
 
     return true;
 }
+#endif
 
 /*
  * Initializes the tree by creating the root node. The CT_OUTPUT Cons below the
  * root node are created in randr.c for each Output.
  *
  */
-void tree_init(xcb_get_geometry_reply_t *geometry) {
+//void tree_init(xcb_get_geometry_reply_t *geometry) {
+void tree_init(Rect *geometry) {
     croot = con_new(NULL, NULL);
     FREE(croot->name);
     croot->name = "root";
     croot->type = CT_ROOT;
     croot->layout = L_SPLITH;
+#if 0
     croot->rect = (Rect){
         geometry->x,
         geometry->y,
         geometry->width,
         geometry->height};
+#else
+    croot->rect = *geometry;
+#endif
 
     _create___i3();
 }
@@ -201,11 +219,13 @@ bool tree_close(Con *con, kill_window_t kill_window, bool dont_kill_parent, bool
     }
 
     /* remove the urgency hint of the workspace (if set) */
+#if 0
     if (con->urgent) {
         con->urgent = false;
         con_update_parents_urgency(con);
         workspace_update_urgent_flag(con_get_workspace(con));
     }
+#endif
 
     /* Get the container which is next focused */
     Con *next = con_next_focused(con);
@@ -231,9 +251,10 @@ bool tree_close(Con *con, kill_window_t kill_window, bool dont_kill_parent, bool
 
     if (con->window != NULL) {
         if (kill_window != DONT_KILL_WINDOW) {
-            x_window_kill(con->window->id, kill_window);
+            //x_window_kill(con->window->id, kill_window);
             return false;
         } else {
+        #if 0
             xcb_void_cookie_t cookie;
             /* Ignore any further events by clearing the event mask,
              * unmap the window,
@@ -263,11 +284,12 @@ bool tree_close(Con *con, kill_window_t kill_window, bool dont_kill_parent, bool
             /* Ignore X11 errors for the ReparentWindow request.
              * X11 Errors are returned when the window was already destroyed */
             add_ignore_event(cookie.sequence, 0);
+        #endif
         }
-        ipc_send_window_event("close", con);
+        //ipc_send_window_event("close", con);
         FREE(con->window->class_class);
         FREE(con->window->class_instance);
-        i3string_free(con->window->name);
+        //i3string_free(con->window->name);
         FREE(con->window->ran_assignments);
         FREE(con->window);
     }
@@ -291,12 +313,15 @@ bool tree_close(Con *con, kill_window_t kill_window, bool dont_kill_parent, bool
     con_detach(con);
 
     /* disable urgency timer, if needed */
+
+#if 0
     if (con->urgency_timer != NULL) {
         DLOG("Removing urgency timer of con %p\n", con);
         workspace_update_urgent_flag(ws);
         ev_timer_stop(main_loop, con->urgency_timer);
         FREE(con->urgency_timer);
     }
+#endif
 
     if (con->type != CT_FLOATING_CON) {
         /* If the container is *not* floating, we might need to re-distribute
@@ -316,7 +341,7 @@ bool tree_close(Con *con, kill_window_t kill_window, bool dont_kill_parent, bool
         tree_render();
 
     /* kill the X11 part of this container */
-    x_con_kill(con);
+    //x_con_kill(con);
 
     if (con_is_floating(con)) {
         DLOG("Container was floating, killing floating container\n");
@@ -525,9 +550,11 @@ void tree_render(void) {
 
     render_con(croot, false);
 
-    x_push_changes(croot);
+    //x_push_changes(croot);
     DLOG("-- END RENDERING --\n");
 }
+
+#if 0
 
 /*
  * Recursive function to walk the tree until a con can be found to focus.
@@ -698,6 +725,8 @@ static bool _tree_next(Con *con, char way, orientation_t orientation, bool wrap)
 void tree_next(char way, orientation_t orientation) {
     _tree_next(focused, way, orientation, true);
 }
+
+#endif
 
 /*
  * tree_flatten() removes pairs of redundant split containers, e.g.:
