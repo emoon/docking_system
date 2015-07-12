@@ -149,3 +149,17 @@ void *memmem(const void *l, size_t l_len, const void *s, size_t s_len);
  *
  */
 //void kill_nagbar(pid_t *nagbar_pid, bool wait_for_it);
+//
+
+int min(int a, int b);
+int max(int a, int b);
+
+bool rect_contains(Rect rect, uint32_t x, uint32_t y);
+
+Rect rect_add(Rect a, Rect b);
+
+Rect rect_sub(Rect a, Rect b);
+
+
+
+

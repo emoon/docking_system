@@ -326,11 +326,9 @@ struct Autostart {
  *
  */
 
-#if 0
-
 struct xoutput {
     /** Output id, so that we can requery the output directly later */
-    xcb_randr_output_t id;
+    uint32_t id;
 
     /** Whether the output is currently active (has a CRTC attached with a
      * valid mode) */
@@ -351,10 +349,8 @@ struct xoutput {
     /** x, y, width, height */
     Rect rect;
 
-    TAILQ_ENTRY(xoutput) outputs;
+    //TAILQ_ENTRY(xoutput) outputs;
 };
-
-#endif
 
 /**
  * A 'Window' is a type which contains an xcb_window_t and all the related

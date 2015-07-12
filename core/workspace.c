@@ -10,12 +10,47 @@
  *              workspaces.
  *
  */
-#include "all.h"
-#include "yajl_utils.h"
+
+#include "workspace.h"
+#include "output.h"
+#include "con.h"
+#include "log.h"
+#include "util.h"
+#include "data.h"
+#include <stddef.h>
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+
+Output g_defaultOutput;
+
+extern int sasprintf(char **strp, const char *fmt, ...);
+
+extern TAILQ_HEAD(ws_assignments_head, Workspace_Assignment) ws_assignments;
+
+struct ws_assignments_head ws_assignments = TAILQ_HEAD_INITIALIZER(ws_assignments);
+
+const orientation_t config_default_orientation = VERT;
+const layout_t config_default_layout = L_DEFAULT;
 
 /* Stores a copy of the name of the last used workspace for the workspace
  * back-and-forth switching. */
 static char *previous_workspace_name = NULL;
+
+/*
+ * Returns the output with the given name if it is active (!) or NULL.
+ *
+ */
+Output *get_output_by_name(const char *name) 
+{
+    return &g_defaultOutput;
+}
+
+Output *get_output_from_string(Output *current_output, const char *output_str)
+{
+    return &g_defaultOutput;
+}
 
 /*
  * Sets ws->layout to splith/splitv if default_orientation was specified in the
@@ -26,14 +61,14 @@ static char *previous_workspace_name = NULL;
 static void _workspace_apply_default_orientation(Con *ws) {
     /* If default_orientation is set to NO_ORIENTATION we determine
      * orientation depending on output resolution. */
-    if (config.default_orientation == NO_ORIENTATION) {
+    if (config_default_orientation == NO_ORIENTATION) {
         Con *output = con_get_output(ws);
         ws->layout = (output->rect.height > output->rect.width) ? L_SPLITV : L_SPLITH;
         ws->rect = output->rect;
         DLOG("Auto orientation. Workspace size set to (%d,%d), setting layout to %d.\n",
              output->rect.width, output->rect.height, ws->layout);
     } else {
-        ws->layout = (config.default_orientation == HORIZ) ? L_SPLITH : L_SPLITV;
+        ws->layout = (config_default_orientation == HORIZ) ? L_SPLITH : L_SPLITV;
     }
 }
 
@@ -79,12 +114,12 @@ Con *workspace_get(const char *num, bool *created) {
         workspace = con_new(NULL, NULL);
         char *name;
         sasprintf(&name, "[i3 con] workspace %s", num);
-        x_set_name(workspace, name);
+        //x_set_name(workspace, name);
         free(name);
         workspace->type = CT_WORKSPACE;
         FREE(workspace->name);
-        workspace->name = sstrdup(num);
-        workspace->workspace_layout = config.default_layout;
+        workspace->name = strdup(num);
+        workspace->workspace_layout = config_default_layout;
         workspace->num = parsed_num;
         LOG("num = %d\n", workspace->num);
 
@@ -93,10 +128,10 @@ Con *workspace_get(const char *num, bool *created) {
 
         con_attach(workspace, content, false);
 
-        ipc_send_workspace_event("init", workspace, NULL);
-        ewmh_update_number_of_desktops();
-        ewmh_update_desktop_names();
-        ewmh_update_desktop_viewport();
+        //ipc_send_workspace_event("init", workspace, NULL);
+        //ewmh_update_number_of_desktops();
+        //ewmh_update_desktop_names();
+        //ewmh_update_desktop_viewport();
         if (created != NULL)
             *created = true;
     } else if (created != NULL) {
@@ -112,7 +147,11 @@ Con *workspace_get(const char *num, bool *created) {
  * container.
  *
  */
+
 Con *create_workspace_on_output(Output *output, Con *content) {
+    assert(1);
+    return 0;
+#if 0
     /* add a workspace to this output */
     Con *out, *current;
     char *name;
@@ -218,6 +257,7 @@ Con *create_workspace_on_output(Output *output, Con *content) {
     _workspace_apply_default_orientation(ws);
 
     return ws;
+#endif
 }
 
 /*
@@ -298,13 +338,13 @@ static void workspace_reassign_sticky(Con *con) {
             continue;
         }
 
-        x_move_win(src, current);
+        //x_move_win(src, current);
         current->window = src->window;
         current->mapped = true;
         src->window = NULL;
         src->mapped = false;
 
-        x_reparent_child(current, src);
+        //x_reparent_child(current, src);
 
         LOG("re-assigned window from src %p to dest %p\n", src, current);
     }
@@ -319,6 +359,7 @@ static void workspace_reassign_sticky(Con *con) {
  * focusing the con.
  *
  */
+#if 0
 static void workspace_defer_update_urgent_hint_cb(EV_P_ ev_timer *w, int revents) {
     Con *con = w->data;
 
@@ -334,6 +375,7 @@ static void workspace_defer_update_urgent_hint_cb(EV_P_ ev_timer *w, int revents
     ev_timer_stop(main_loop, con->urgency_timer);
     FREE(con->urgency_timer);
 }
+#endif
 
 static void _workspace_show(Con *workspace) {
     Con *current, *old = NULL;
@@ -368,7 +410,7 @@ static void _workspace_show(Con *workspace) {
     if (current && !con_is_internal(current)) {
         FREE(previous_workspace_name);
         if (current) {
-            previous_workspace_name = sstrdup(current->name);
+            previous_workspace_name = strdup(current->name);
             DLOG("Setting previous_workspace_name = %s\n", previous_workspace_name);
         }
     }
@@ -383,6 +425,7 @@ static void _workspace_show(Con *workspace) {
 
     /* Display urgency hint for a while if the newly visible workspace would
      * focus and thereby immediately destroy it */
+#if 0
     if (next->urgent && (int)(config.workspace_urgency_timer * 1000) > 0) {
         /* focus for now… */
         next->urgent = false;
@@ -409,9 +452,10 @@ static void _workspace_show(Con *workspace) {
             ev_timer_again(main_loop, focused->urgency_timer);
         }
     } else
-        con_focus(next);
+#endif
+    con_focus(next);
 
-    ipc_send_workspace_event("focus", workspace, current);
+    //ipc_send_workspace_event("focus", workspace, current);
 
     DLOG("old = %p / %s\n", old, (old ? old->name : "(null)"));
     /* Close old workspace if necessary. This must be done *after* doing
@@ -423,19 +467,19 @@ static void _workspace_show(Con *workspace) {
         /* check if this workspace is currently visible */
         if (!workspace_is_visible(old)) {
             LOG("Closing old workspace (%p / %s), it is empty\n", old, old->name);
-            yajl_gen gen = ipc_marshal_workspace_event("empty", old, NULL);
+            //yajl_gen gen = ipc_marshal_workspace_event("empty", old, NULL);
             tree_close(old, DONT_KILL_WINDOW, false, false);
 
-            const unsigned char *payload;
-            ylength length;
-            y(get_buf, &payload, &length);
-            ipc_send_event("workspace", I3_IPC_EVENT_WORKSPACE, (const char *)payload);
+            //const unsigned char *payload;
+            //ylength length;
+            //y(get_buf, &payload, &length);
+            //ipc_send_event("workspace", I3_IPC_EVENT_WORKSPACE, (const char *)payload);
 
-            y(free);
+            //y(free);
 
-            ewmh_update_number_of_desktops();
-            ewmh_update_desktop_names();
-            ewmh_update_desktop_viewport();
+            //ewmh_update_number_of_desktops();
+            //ewmh_update_desktop_names();
+            //ewmh_update_desktop_viewport();
         }
     }
 
@@ -443,6 +487,7 @@ static void _workspace_show(Con *workspace) {
     LOG("focused now = %p / %s\n", focused, focused->name);
 
     /* Set mouse pointer */
+#if 0
     Con *new_output = con_get_output(focused);
     if (old_output != new_output) {
         x_set_warp_to(&next->rect);
@@ -450,6 +495,7 @@ static void _workspace_show(Con *workspace) {
 
     /* Update the EWMH hints */
     ewmh_update_current_desktop();
+#endif
 }
 
 /*
@@ -770,6 +816,7 @@ static bool get_urgency_flag(Con *con) {
  * urgent flag accordingly.
  *
  */
+#if 0
 void workspace_update_urgent_flag(Con *ws) {
     bool old_flag = ws->urgent;
     ws->urgent = get_urgency_flag(ws);
@@ -778,6 +825,7 @@ void workspace_update_urgent_flag(Con *ws) {
     if (old_flag != ws->urgent)
         ipc_send_workspace_event("urgent", ws, NULL);
 }
+#endif
 
 /*
  * 'Forces' workspace orientation by moving all cons into a new split-con with
@@ -946,7 +994,7 @@ bool workspace_move_to_output(Con *ws, char *name) {
             create_workspace_on_output(current_output, ws->parent);
 
         /* notify the IPC listeners */
-        ipc_send_workspace_event("init", ws, NULL);
+        //ipc_send_workspace_event("init", ws, NULL);
     }
     DLOG("Detaching\n");
 
@@ -965,9 +1013,9 @@ bool workspace_move_to_output(Con *ws, char *name) {
     /* fix the coordinates of the floating containers */
     Con *floating_con;
     TAILQ_FOREACH(floating_con, &(ws->floating_head), floating_windows)
-    floating_fix_coordinates(floating_con, &(old_content->rect), &(content->rect));
+    //floating_fix_coordinates(floating_con, &(old_content->rect), &(content->rect));
 
-    ipc_send_workspace_event("move", ws, NULL);
+    //ipc_send_workspace_event("move", ws, NULL);
     if (workspace_was_visible) {
         /* Focus the moved workspace on the destination output. */
         workspace_show(ws);

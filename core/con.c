@@ -23,6 +23,8 @@
 #include <string.h>
 #include <assert.h>
 
+//
+
 #ifndef NULL
 #define NULL 0
 #endif
@@ -250,6 +252,7 @@ void con_focus(Con *con) {
      * the changes upwards via con_update_parents_urgency() which does proper
      * checks before resetting the urgency.
      */
+#if 0
     if (con->urgent && con_is_leaf(con)) {
         con->urgent = false;
         con_update_parents_urgency(con);
@@ -258,6 +261,7 @@ void con_focus(Con *con) {
         // ipc_send_window_event("urgent", con);
         // DIVERGENCE
     }
+#endif
 }
 
 /*

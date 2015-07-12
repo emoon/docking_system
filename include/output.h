@@ -21,3 +21,4 @@ Con *output_get_content(Con *output);
  *
  */
 Output *get_output_from_string(Output *current_output, const char *output_str);
+
