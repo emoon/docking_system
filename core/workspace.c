@@ -151,9 +151,6 @@ Con *workspace_get(const char *num, bool *created) {
  */
 
 Con *create_workspace_on_output(Output *output, Con *content) {
-    assert(1);
-    return 0;
-#if 0
     /* add a workspace to this output */
     Con *out, *current;
     char *name;
@@ -161,6 +158,7 @@ Con *create_workspace_on_output(Output *output, Con *content) {
     Con *ws = con_new(NULL, NULL);
     ws->type = CT_WORKSPACE;
 
+#if 0
     /* try the configured workspace bindings first to find a free name */
     Binding *bind;
     TAILQ_FOREACH(bind, bindings, bindings) {
@@ -247,19 +245,22 @@ Con *create_workspace_on_output(Output *output, Con *content) {
         }
         sasprintf(&(ws->name), "%d", c);
     }
+#endif
+
+    ws->name = "temp_ws_name";
+
     con_attach(ws, content, false);
 
-    sasprintf(&name, "[i3 con] workspace %s", ws->name);
-    x_set_name(ws, name);
-    free(name);
+    //sasprintf(&name, "[i3 con] workspace %s", ws->name);
+    //x_set_name(ws, name);
+    //free(name);
 
     ws->fullscreen_mode = CF_OUTPUT;
 
-    ws->workspace_layout = config.default_layout;
+    ws->workspace_layout = config_default_layout;
     _workspace_apply_default_orientation(ws);
 
     return ws;
-#endif
 }
 
 /*
