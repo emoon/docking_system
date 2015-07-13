@@ -42,6 +42,7 @@ static char *previous_workspace_name = NULL;
  * Returns the output with the given name if it is active (!) or NULL.
  *
  */
+/*
 Output *get_output_by_name(const char *name) 
 {
     return &g_defaultOutput;
@@ -51,6 +52,7 @@ Output *get_output_from_string(Output *current_output, const char *output_str)
 {
     return &g_defaultOutput;
 }
+*/
 
 /*
  * Sets ws->layout to splith/splitv if default_orientation was specified in the

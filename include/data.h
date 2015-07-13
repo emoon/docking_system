@@ -349,7 +349,7 @@ struct xoutput {
     /** x, y, width, height */
     Rect rect;
 
-    //TAILQ_ENTRY(xoutput) outputs;
+    TAILQ_ENTRY(xoutput) outputs;
 };
 
 /**

@@ -22,3 +22,9 @@ Con *output_get_content(Con *output);
  */
 Output *get_output_from_string(Output *current_output, const char *output_str);
 
+TAILQ_HEAD(outputs_head, xoutput);
+extern struct outputs_head outputs;
+
+
+Output *get_output_by_name(const char *name);
+
