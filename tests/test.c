@@ -99,7 +99,6 @@ int main()
 
 	tree_render();
 
-
 	for (;;)
 	{
 		int state = mfb_update(s_buffer);

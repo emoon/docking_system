@@ -9,7 +9,17 @@
  * move.c: Moving containers into some direction.
  *
  */
-#include "all.h"
+//#include "all.h"
+
+#include "data.h"
+#include "con.h"
+#include "workspace.h"
+#include "log.h"
+#include "util.h"
+#include "output.h"
+#include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 typedef enum { BEFORE,
                AFTER } position_t;
@@ -35,6 +45,7 @@ static void insert_con_into(Con *con, Con *target, position_t position) {
         Con *split = workspace_attach_to(parent);
         if (split != parent) {
             DLOG("Got a new split con, using that one instead\n");
+
             con->parent = split;
             con_attach(con, split, false);
             DLOG("attached\n");
@@ -124,11 +135,11 @@ static void move_to_output_directed(Con *con, direction_t direction) {
     con_focus(con);
 
     /* force re-painting the indicators */
-    FREE(con->deco_render_params);
+    free(con->deco_render_params);
 
     tree_flatten(croot);
 
-    ipc_send_workspace_event("focus", ws, old_ws);
+    //ipc_send_workspace_event("focus", ws, old_ws);
 }
 
 /*
@@ -166,7 +177,7 @@ void tree_move(Con *con, int direction) {
         if (!same_orientation) {
             if (con_is_floating(con)) {
                 /* this is a floating con, we just disable floating */
-                floating_disable(con, true);
+                //floating_disable(con, true);
                 return;
             }
             if (con_inside_floating(con)) {
@@ -205,7 +216,7 @@ void tree_move(Con *con, int direction) {
                 TAILQ_INSERT_HEAD(&(swap->parent->focus_head), con, focused);
 
                 DLOG("Swapped.\n");
-                ipc_send_window_event("move", con);
+                //ipc_send_window_event("move", con);
                 return;
             }
 
@@ -213,7 +224,7 @@ void tree_move(Con *con, int direction) {
                 /*  If we couldn't find a place to move it on this workspace,
                  *  try to move it to a workspace on a different output */
                 move_to_output_directed(con, direction);
-                ipc_send_window_event("move", con);
+                //ipc_send_window_event("move", con);
                 return;
             }
 
@@ -273,5 +284,5 @@ end:
     FREE(con->deco_render_params);
 
     tree_flatten(croot);
-    ipc_send_window_event("move", con);
+    //ipc_send_window_event("move", con);
 }

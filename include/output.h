@@ -9,6 +9,11 @@
  */
 #pragma once
 
+typedef enum {
+    CLOSEST_OUTPUT = 0,
+    FARTHEST_OUTPUT = 1
+} output_close_far_t;
+
 /**
  * Returns the output container below the given output container.
  *
@@ -27,4 +32,7 @@ extern struct outputs_head outputs;
 
 
 Output *get_output_by_name(const char *name);
+
+Output *get_output_next(direction_t direction, Output *current, output_close_far_t close_far);
+
 

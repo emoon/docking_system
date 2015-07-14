@@ -35,12 +35,6 @@ extern TAILQ_HEAD(ws_assignments_head, Workspace_Assignment) ws_assignments;
 
 extern int sasprintf(char **strp, const char *fmt, ...);
 
-typedef enum {
-    CLOSEST_OUTPUT = 0,
-    FARTHEST_OUTPUT = 1
-} output_close_far_t;
-
-
 /*
  * Get a specific output by its internal X11 id. Used by randr_query_outputs
  * to check if the output is new (only in the first scan) or if we are
