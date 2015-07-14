@@ -16,6 +16,7 @@
 #include "con.h"
 #include "log.h"
 #include "util.h"
+#include "callbacks.h"
 #include "output.h"
 #include <stdbool.h>
 #include <stddef.h>
@@ -120,6 +121,9 @@ static void render_l_output(Con *con) {
         child->deco_rect.height = 0;
 
         y += child->rect.height;
+
+        if (g_callbacks && g_callbacks->render_con)
+            g_callbacks->render_con(child);
 
         DLOG("child at (%d, %d) with (%d x %d)\n",
              child->rect.x, child->rect.y, child->rect.width, child->rect.height);
@@ -444,8 +448,12 @@ void render_con(Con *con, bool render_fullscreen) {
                 y += child->rect.height;
             }
 
+            if (g_callbacks && g_callbacks->render_con)
+                g_callbacks->render_con(child);
+
             DLOG("child at (%d, %d) with (%d x %d)\n",
                  child->rect.x, child->rect.y, child->rect.width, child->rect.height);
+
             //x_raise_con(child);
             render_con(child, false);
             i++;
