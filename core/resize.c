@@ -9,9 +9,16 @@
  * resize.c: Interactive resizing.
  *
  */
-#include "all.h"
+//#include "all.h"
+//
 
-extern xcb_connection_t *conn;
+#include "data.h"
+#include "log.h"
+#include "con.h"
+#include <stdbool.h>
+#include <stddef.h>
+
+//extern xcb_connection_t *conn;
 
 /*
  * This is an ugly data structure which we need because there is no standard
@@ -20,6 +27,9 @@ extern xcb_connection_t *conn;
  * extension and only on Mac OS X systems at the moment).
  *
  */
+
+#if 0
+
 struct callback_params {
     orientation_t orientation;
     Con *output;
@@ -50,6 +60,8 @@ DRAGGING_CB(resize_callback) {
 
     xcb_flush(conn);
 }
+
+#endif
 
 bool resize_find_tiling_participants(Con **current, Con **other, direction_t direction) {
     DLOG("Find two participants for resizing container=%p in direction=%i\n", other, direction);
