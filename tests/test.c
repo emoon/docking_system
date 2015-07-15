@@ -15,7 +15,9 @@ void fake_outputs_init(const char *output_spec);
 
 #define WIDTH 1024
 #define HEIGHT 768
-static unsigned int s_buffer[WIDTH * HEIGHT];
+#define HEIGHT_OFFSET 22
+
+static unsigned int s_buffer[WIDTH * (HEIGHT + HEIGHT_OFFSET)];
 
 const char* s_outputFormat = "1024x768+0+0";
 
@@ -55,7 +57,7 @@ static void renderCon(Con* con)
 {
 	static int i = 0;
 
-	fillRect(s_buffer, con->rect, WIDTH, s_colors[i++ & 0x7]);
+	fillRect(&s_buffer[WIDTH * HEIGHT_OFFSET], con->rect, WIDTH, s_colors[i++ & 0x7]);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -94,7 +96,7 @@ int main()
     con = tree_open_con(NULL, NULL);
     con = tree_open_con(NULL, NULL);
 
-	if (!mfb_open("i3 docking test", WIDTH, HEIGHT))
+	if (!mfb_open("i3 docking test", WIDTH, HEIGHT + 22))
 		return 0;
 
 	tree_render();
